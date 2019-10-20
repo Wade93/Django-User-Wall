@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Index</title>
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'wall_app/css/style.css' %}">  
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">  
+        <script src="{% static 'wall_app/js/script.js' %}"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    </head>
+    <body class="bg-info">
+        <div class="container px-2">
+            <div class="navbar fixed-top bg-secondary">
+                <h3 class="display-4 text-white">CodingDojoWall</h3>
+                <h5 class="ml-auto mr-5 texit-white">Welcome {{request.session.fname}}!</h5>
+                <h5 class="ml-4 mr-4"><u><a class="text-white" href = "/logout_user">Log Off</a></u></h5>
+            </div>
+            <div class="container bg-white pt-5">
+                <div class="row justify-content-center mt-5">
+                    <div class="col-8">
+                        <form class="form col" action="/post_message" method="POST">
+                            {% csrf_token %}
+                            <p class="lead">Post a Message!</p>
+                            <div class="row">
+                                <textarea style="height: 150px;" class="col rounded" name="message"></textarea>
+                            </div>
+                            <div class="row mt-3">
+                                <button type="submit" class="btn btn-info ml-auto border border-dark">Post to Wall!</button>
+                            </div>
+                        </form>
+                        {% for message in wall_messages reversed %}
+                        <div class="row mt-3 justify-content-end">
+                            <div class="col px-2">
+                                <div class="row">
+                                    <p>On {{message.created_at}}, {{message.user.first_name}} wrote:</p>
+                                </div>
+                                <div class="row justify-content-end">
+                                    <div class="col-11">
+                                        <div class="row">
+                                            <small class="col p-2 border border-dark rounded d-block">{{message.message}}</small>
+                                        </div>
+                                        {% if message.user.id == request.session.user_id %}
+                                            <form class="mt-1" action="/delete_message" method="POST">
+                                                    {% csrf_token %}
+                                                <input type="hidden" name="message_id" value="{{message.id}}">
+                                                <input class="px-1" type="submit" value="Delete">
+                                            </form>
+                                        {% endif %}
+                                        <div class="row justify-content-end">
+                                            <div class="col-11 mt-5">
+                                            {% for comment in message.comments.all reversed %}
+                                                <div class="row mb-4">
+                                                    <small class="mr-3">{{comment.created_at}}, {{comment.user.first_name}} commented:</small>
+                                                    <small class="col p-1 border border-dark rounded d-block">{{comment.comment}}</small>
+                                                    {% if comment.user.id == request.session.user_id %}
+                                                        <form class="ml-2" action="/delete_comment" method="POST">
+                                                                {% csrf_token %}
+                                                            <input type="hidden" name="comment_id" value="{{comment.id}}">
+                                                            <input class="px-1" type="submit" value="Delete">
+                                                        </form>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                            <form class="form col" action="/post_comment" method="POST">
+                                                <input type="hidden" name="message_id" value="{{message.id}}">
+                                                {% csrf_token %}
+                                                <p>Post a Comment</p>
+                                                <div class="row">
+                                                    <textarea style="height: 75px;" class="col rounded" name="comment"></textarea>
+                                                </div>
+                                                <div class="row mt-3">
+                                                    <button type="submit" class="btn btn-info ml-auto border border-dark">Add Comment!</button>
+                                                </div>
+                                            </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
